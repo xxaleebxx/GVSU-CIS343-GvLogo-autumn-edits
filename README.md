@@ -7,7 +7,7 @@ Logo was a language created for educational purposes, with a focus on drawing. Y
 the screen, and you moved her around with commands. You imagined a pen being attached to the turtle's
 tail, and if the pen was down, the turtle drew as she moved.
 
-Recall, you build as follows:
-bison -d gvlogo.y
-flex gvlogo.l
-clang *.c -o gvlogo -I./include -L./lib -lSDL2 -ll -lm
+# Recall, you build as follows:
+* bison -d gvlogo.y
+* flex gvlogo.l
+* clang *.c -o gvlogo -I./include -L./lib -lSDL2 -ll -lm
