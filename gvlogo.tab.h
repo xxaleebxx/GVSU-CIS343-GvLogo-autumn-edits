@@ -49,15 +49,18 @@
      TURN = 265,
      LOOP = 266,
      MOVE = 267,
-     NUMBER = 268,
-     END = 269,
-     SAVE = 270,
-     PLUS = 271,
-     SUB = 272,
-     MULT = 273,
-     DIV = 274,
-     STRING = 275,
-     QSTRING = 276
+     GOTO = 268,
+     WHERE = 269,
+     EQUALS = 270,
+     NUMBER = 271,
+     END = 272,
+     SAVE = 273,
+     PLUS = 274,
+     SUB = 275,
+     MULT = 276,
+     DIV = 277,
+     STRING = 278,
+     QSTRING = 279
    };
 #endif
 /* Tokens.  */
@@ -71,28 +74,31 @@
 #define TURN 265
 #define LOOP 266
 #define MOVE 267
-#define NUMBER 268
-#define END 269
-#define SAVE 270
-#define PLUS 271
-#define SUB 272
-#define MULT 273
-#define DIV 274
-#define STRING 275
-#define QSTRING 276
+#define GOTO 268
+#define WHERE 269
+#define EQUALS 270
+#define NUMBER 271
+#define END 272
+#define SAVE 273
+#define PLUS 274
+#define SUB 275
+#define MULT 276
+#define DIV 277
+#define STRING 278
+#define QSTRING 279
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 50 "gvlogo.y"
+#line 52 "gvlogo.y"
 {
 	float f;
 	char* s;
 }
 /* Line 1529 of yacc.c.  */
-#line 96 "gvlogo.tab.h"
+#line 102 "gvlogo.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

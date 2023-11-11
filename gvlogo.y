@@ -1,6 +1,8 @@
 %{
 #define WIDTH 640
 #define HEIGHT 480
+#define MAX_VARIABLES 256
+
 
 #include <math.h>
 #include <stdio.h>
@@ -17,6 +19,10 @@ static int running = 1;
 static const int PEN_EVENT = SDL_USEREVENT + 1;
 static const int DRAW_EVENT = SDL_USEREVENT + 2;
 static const int COLOR_EVENT = SDL_USEREVENT + 3;
+
+// simply create a fixed sized arrayto use, or implement a dynamically sized symbol table.
+double variables[MAX_VARIABLES];
+int varCount = 0;
 
 typedef struct color_t {
 	unsigned char r;
@@ -39,17 +45,25 @@ void penup();
 void pendown();
 void move(int num);
 void turn(int dir);
+void where();
+void gotoxy(int x, int y);
+void yyerror(const char *s);
+int lookupVariable(char *varName);
+void setVariable(char *varName, double value);
 void output(const char* s);
 void change_color(int r, int g, int b);
 void clear();
 void save(const char* path);
 void shutdown();
 
+
 %}
 
 %union {
 	float f;
+	in i;
 	char* s;
+
 }
 
 %locations
@@ -64,35 +78,56 @@ void shutdown();
 %token TURN
 %token LOOP
 %token MOVE
+%token GOTO
+%token WHERE
+%token EQUALS
 %token NUMBER
 %token END
 %token SAVE
 %token PLUS SUB MULT DIV
 %token<s> STRING QSTRING
+%token <s> VARIABLE
 %type<f> expression expression_list NUMBER
-
+%type <i> variable
 %%
 
 program:		statement_list END				{ printf("Program complete."); shutdown(); exit(0); }
 		;
-statement_list:		statement					
-		|	statement statement_list
+statement_list:	statement					
+		|	    statement statement_list
 		;
 statement:		command SEP					{ prompt(); }
 		|	    error '\n' 					{ yyerrok; prompt(); }
 		;
 command:		PENUP						{ penup(); }
+        |       PENDOWN                     { pendown(); }
+		|       PRINT QSTRING               { printf("%s", $2); }
+		|       SAVE STRING                 { save($2); }
+		|       COLOR NUMBER NUMBER NUMBER  { change_color($2, $3, $4); }
+		|       CLEAR                       { clear(); }
+		|       TURN expression             { turn($2); }
+		|       MOVE expression             { move($2); }
+		|       GOTO expression expression  { gotoxy($2, $3); }
+		|       WHERE                       { where(); }
 		;
-expression_list: 
-		|	// Complete these and any missing rules
-		;
+expression_list:
+                expression { printf("Result: %f\n", $1); }
+    	|       expression_list expression { printf("Result: %f\n", $2); }
+   		;
+
 expression:	NUMBER PLUS expression				{ $$ = $1 + $3; }
 		|	NUMBER MULT expression				{ $$ = $1 * $3; }
 		|	NUMBER SUB expression				{ $$ = $1 - $3; }
 		|	NUMBER DIV expression				{ $$ = $1 / $3; }
-		|	NUMBER
+		|	NUMBER {$$ = $1}
+		|   variable {$$ = variables[$1];}
 		;
+// Add variables. You can limit the number of possible variables and 
+// simply create a fixed sized arrayto use, or implement a dynamically sized symbol table.
+// Add a way to store an expression to a variable.
 
+variable:
+		VARIABLE {$$ = lookupVariable($1);}
 %%
 
 int main(int argc, char** argv){
@@ -133,6 +168,42 @@ void turn(int dir){
 	event.user.code = 2;
 	event.user.data1 = dir;
 	SDL_PushEvent(&event);
+}
+// Modify the CFG to allow a variable value in the move , turn , and goto  commands
+
+void gotoxy(int new_x, int new_y) {
+	if (pen_state) {
+		SDL_SetRenderTarget(rand, texture);
+		SDL_RenderDrawLine(rend, x, y, new_x, new_y);
+		SDL_SetRenderTarget(rand, NULL);
+	}
+	// then we will update the position
+	x = new_x;
+	y = new_y;
+}
+void where(){
+	printf("Current position: (%f. %f)\n", x, y);
+}
+
+int lookupVariable(char *varName) {
+    for (int i = 0; i < varCount; ++i) {
+        if (strcmp(varNames[i], varName) == 0) {
+            return i;
+        }
+    }
+    // create a new one
+    if (varCount < MAX_VARIABLES) {
+        varNames[varCount] = strdup(varName);
+        return varCount++;
+    } else {
+        yyerror("Too many variables");
+        exit(1);
+    }
+}
+
+void setVariable(char *varName, double value) {
+    int index = lookupVariable(varName);
+    variables[index] = value;
 }
 
 void output(const char* s){
@@ -183,14 +254,14 @@ void startup(){
 			}
 			if(e.type == PEN_EVENT){
 				if(e.user.code == 2){
-					double degrees = ((int)e.user.data1) * M_PI / 180.0;
+					double degrees = ((intptr_t)e.user.data1) * M_PI / 180.0;
 					direction += degrees;
 				}
 				pen_state = e.user.code;
 			}
 			if(e.type == DRAW_EVENT){
 				if(e.user.code == 1){
-					int num = (int)event.user.data1;
+					int num = (int)(intptr_t)event.user.data1;
 					double x2 = x + num * cos(direction);
 					double y2 = y + num * sin(direction);
 					if(pen_state != 0){
@@ -226,6 +297,7 @@ void startup(){
 int run(void* data){
 	prompt();
 	yyparse();
+	return 0;
 }
 
 void shutdown(){
