@@ -61,7 +61,7 @@ void shutdown();
 
 %union {
 	float f;
-	in i;
+	int i;
 	char* s;
 
 }
