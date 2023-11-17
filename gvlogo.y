@@ -20,8 +20,8 @@ static const int PEN_EVENT = SDL_USEREVENT + 1;
 static const int DRAW_EVENT = SDL_USEREVENT + 2;
 static const int COLOR_EVENT = SDL_USEREVENT + 3;
 
-// simply create a fixed sized arrayto use, or implement a dynamically sized symbol table.
-double variables[MAX_VARIABLES];
+double variables[MAX_VARIABLES]; // Array to store variable values
+char* varNames[MAX_VARIABLES];   // Array to store variable names
 int varCount = 0;
 
 typedef struct color_t {
@@ -37,19 +37,18 @@ static int pen_state = 1;
 static double direction = 0.0;
 
 int yylex(void);
-int yyerror(const char* s);
+void yyerror(const char* s);
 void startup();
 int run(void* data);
 void prompt();
 void penup();
 void pendown();
-void move(int num);
-void turn(int dir);
-void where();
-void gotoxy(int x, int y);
-void yyerror(const char *s);
-int lookupVariable(char *varName);
-void setVariable(char *varName, double value);
+void move(double num);
+void turn(double dir);
+void where();  // added
+void gotoxy(double x, double y); // added
+int lookupVariable(char *varName); // added
+void setVariable(char *varName, double value); // added
 void output(const char* s);
 void change_color(int r, int g, int b);
 void clear();
@@ -85,21 +84,31 @@ void shutdown();
 %token END
 %token SAVE
 %token PLUS SUB MULT DIV
+%token ASSIGN
 %token<s> STRING QSTRING
 %token <s> VARIABLE
-%type<f> expression expression_list NUMBER
+%type<f> expression NUMBER
 %type <i> variable
+%left PLUS SUB
+%left MULT DIV
 %%
 
-program:		statement_list END				{ printf("Program complete."); shutdown(); exit(0); }
+program:		
+				statement_list END				{ printf("Program complete."); shutdown(); exit(0); }
 		;
-statement_list:	statement					
-		|	    statement statement_list
+statement_list:	
+				statement					
+		|	    statement_list statement
 		;
-statement:		command SEP					{ prompt(); }
+statement:		
+				command SEP					{ prompt(); }
 		|	    error '\n' 					{ yyerrok; prompt(); }
+		|       VARIABLE ASSIGN expression { setVariable($1, $3); }
+		|  		expression { printf("Result: %f\n", $1); }
 		;
-command:		PENUP						{ penup(); }
+
+command:		
+				PENUP						{ penup(); }
         |       PENDOWN                     { pendown(); }
 		|       PRINT QSTRING               { printf("%s", $2); }
 		|       SAVE STRING                 { save($2); }
@@ -110,24 +119,21 @@ command:		PENUP						{ penup(); }
 		|       GOTO expression expression  { gotoxy($2, $3); }
 		|       WHERE                       { where(); }
 		;
-expression_list:
-                expression { printf("Result: %f\n", $1); }
-    	|       expression_list expression { printf("Result: %f\n", $2); }
-   		;
 
-expression:	NUMBER PLUS expression				{ $$ = $1 + $3; }
-		|	NUMBER MULT expression				{ $$ = $1 * $3; }
-		|	NUMBER SUB expression				{ $$ = $1 - $3; }
-		|	NUMBER DIV expression				{ $$ = $1 / $3; }
-		|	NUMBER {$$ = $1}
-		|   variable {$$ = variables[$1];}
+expression:	
+			 NUMBER { $$ = $1; }
+		| 	expression PLUS expression { $$ = $1 + $3; }
+		| 	expression SUB expression { $$ = $1 - $3; }
+		| 	expression MULT expression { $$ = $1 * $3; }
+		| 	expression DIV expression { $$ = $1 / $3; }
+		| 	'(' expression ')' { $$ = $2; }  
+		| 	variable { $$ = variables[$1]; }
 		;
-// Add variables. You can limit the number of possible variables and 
-// simply create a fixed sized arrayto use, or implement a dynamically sized symbol table.
-// Add a way to store an expression to a variable.
 
 variable:
-		VARIABLE {$$ = lookupVariable($1);}
+    		VARIABLE { $$ = lookupVariable(yylval.s); }
+	;
+
 %%
 
 int main(int argc, char** argv){
@@ -135,10 +141,9 @@ int main(int argc, char** argv){
 	return 0;
 }
 
-int yyerror(const char* s){
-	printf("Error: %s\n", s);
-	return -1;
-};
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+}
 
 void prompt(){
 	printf("gv_logo > ");
@@ -156,35 +161,41 @@ void pendown() {
 	SDL_PushEvent(&event);
 }
 
-void move(int num){
+void move(double num){
 	event.type = DRAW_EVENT;
 	event.user.code = 1;
-	event.user.data1 = num;
+	event.user.data1 = (void*)(intptr_t)num;
 	SDL_PushEvent(&event);
 }
 
-void turn(int dir){
+void turn(double dir){
 	event.type = PEN_EVENT;
 	event.user.code = 2;
-	event.user.data1 = dir;
+	event.user.data1 = (void*)(intptr_t)dir;
 	SDL_PushEvent(&event);
 }
 // Modify the CFG to allow a variable value in the move , turn , and goto  commands
-
-void gotoxy(int new_x, int new_y) {
+// *goto - Moves the turtle to a particular coordinate.Draws if the pen is down, otherwise does not.
+void gotoxy(double newx, double newy) {
 	if (pen_state) {
-		SDL_SetRenderTarget(rand, texture);
-		SDL_RenderDrawLine(rend, x, y, new_x, new_y);
-		SDL_SetRenderTarget(rand, NULL);
+		SDL_SetRenderTarget(rend, texture);
+		SDL_RenderDrawLine(rend, x, y, newx, newy);
+		SDL_SetRenderTarget(rend, NULL);
+	    SDL_RenderCopy(rend, texture, NULL, NULL); // Update the window with the new line
+
 	}
-	// then we will update the position
-	x = new_x;
-	y = new_y;
-}
-void where(){
-	printf("Current position: (%f. %f)\n", x, y);
+	// then  update the position
+	x = newx;
+	y = newy;
 }
 
+// *where - Prints the current coordinates.
+void where(){
+	printf("Current position: (%f, %f)\n", x, y);
+}
+
+// Add variables. You can limit the number of possible variables and simply create a fixed sized array
+// to use, or implement a dynamically sized symbol table.
 int lookupVariable(char *varName) {
     for (int i = 0; i < varCount; ++i) {
         if (strcmp(varNames[i], varName) == 0) {

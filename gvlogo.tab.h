@@ -59,8 +59,10 @@
      SUB = 275,
      MULT = 276,
      DIV = 277,
-     STRING = 278,
-     QSTRING = 279
+     ASSIGN = 278,
+     STRING = 279,
+     QSTRING = 280,
+     VARIABLE = 281
    };
 #endif
 /* Tokens.  */
@@ -84,21 +86,25 @@
 #define SUB 275
 #define MULT 276
 #define DIV 277
-#define STRING 278
-#define QSTRING 279
+#define ASSIGN 278
+#define STRING 279
+#define QSTRING 280
+#define VARIABLE 281
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 52 "gvlogo.y"
+#line 61 "gvlogo.y"
 {
 	float f;
+	int i;
 	char* s;
+
 }
 /* Line 1529 of yacc.c.  */
-#line 102 "gvlogo.tab.h"
+#line 108 "gvlogo.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

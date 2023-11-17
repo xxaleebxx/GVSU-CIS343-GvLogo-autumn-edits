@@ -14,7 +14,7 @@ extern void yyerror(const char* s);
 "color"      { return COLOR; }
 "clear"      { return CLEAR; }
 "turn"       { return TURN; }
-"where"      { return where; }
+"where"      { return WHERE; }
 "loop"       { return LOOP; }
 "move"       { return MOVE; }
 "save"       { return SAVE; }
@@ -22,8 +22,9 @@ extern void yyerror(const char* s);
 "-"          { return SUB; }
 "*"          { return MULT; }
 "/"          { return DIV; }
-[0-9]+(\.[0-9]+)?  { yylval.num = atof(yytext); return NUMBER; }
-[a-zA-Z_][a-zA-Z0-9_]*    { yylval.i = lookupVariable(yytext); return VARIABLE; }
+"="          { return ASSIGN; }
+[0-9]+(\.[0-9]+)?  { yylval.f = atof(yytext); return NUMBER; }
+[a-zA-Z_][a-zA-Z0-9_]* { yylval.s = strdup(yytext); return VARIABLE; }
 [ \t\r\n]			;
 .			{ yyerror("Lexing Syntax error.\n"); } 
 
