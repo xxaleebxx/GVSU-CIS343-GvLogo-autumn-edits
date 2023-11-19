@@ -7,7 +7,7 @@ extern void yyerror(const char* s);
 %}
 
 %%
-;           {return SEP; }
+;           { return SEP; }
 penup      { return PENUP; }
 pendown    { return PENDOWN; }
 print      { return PRINT; }
@@ -20,10 +20,10 @@ loop       { return LOOP; }
 move       { return MOVE; }
 save       { return SAVE; }
 goto        { return GOTO; }
-+          { return PLUS; }
+\+          { return PLUS; }
 -          { return SUB; }
-*          { return MULT; }
-/          { return DIV; }
+\*          { return MULT; }
+\/          { return DIV; }
 =          { return ASSIGN; }
 [0-9]+(\.[0-9]+)?  { yylval.f = atof(yytext); return NUMBER; }
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.s = strdup(yytext); return VARIABLE; }
