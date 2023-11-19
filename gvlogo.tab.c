@@ -1887,6 +1887,8 @@ void where(){
 	printf("Current position: (%f, %f)\n", x, y);
 }
 
+// Add variables. You can limit the number of possible variables and simply create a fixed sized array
+// to use, or implement a dynamically sized symbol table.
 int lookupVariable(char *varName) {
     for (int i = 0; i < varCount; ++i) {
         if (strcmp(varNames[i], varName) == 0) {

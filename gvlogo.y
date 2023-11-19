@@ -1,7 +1,7 @@
 %{
 #define WIDTH 640
 #define HEIGHT 480
-#define MAX_VARIABLES 256
+#define MAX_VARIABLES 256    //added
 
 
 #include <math.h>
@@ -60,7 +60,7 @@ void shutdown();
 
 %union {
 	float f;
-	int i;
+	int i;    //added
 	char* s;
 
 }
@@ -78,19 +78,19 @@ void shutdown();
 %token LOOP
 %token MOVE
 %token GOTO
-%token WHERE
+%token WHERE 
 %token EQUALS
 %token NUMBER
 %token END
 %token SAVE
 %token PLUS SUB MULT DIV
-%token ASSIGN
+%token ASSIGN                      //added
 %token<s> STRING QSTRING
 %token <s> VARIABLE
 %type<f> expression NUMBER
-%type <i> variable
-%left PLUS SUB
-%left MULT DIV
+%type <i> variable            //added
+%left PLUS SUB				   //added
+%left MULT DIV             //added
 %%
 
 program:		
