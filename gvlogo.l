@@ -7,6 +7,7 @@ extern void yyerror(const char* s);
 %}
 
 %%
+;           {return SEP; }
 penup      { return PENUP; }
 pendown    { return PENDOWN; }
 print      { return PRINT; }
@@ -18,6 +19,7 @@ where      { return WHERE; }
 loop       { return LOOP; }
 move       { return MOVE; }
 save       { return SAVE; }
+goto        { return GOTO; }
 +          { return PLUS; }
 -          { return SUB; }
 *          { return MULT; }

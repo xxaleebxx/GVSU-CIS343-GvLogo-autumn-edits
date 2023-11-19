@@ -75,14 +75,14 @@ void shutdown();
 %token COLOR
 %token CLEAR
 %token TURN
+%token WHERE 
 %token LOOP
 %token MOVE
+%token SAVE
 %token GOTO
-%token WHERE 
 %token EQUALS
 %token NUMBER
 %token END
-%token SAVE
 %token PLUS SUB MULT DIV
 %token ASSIGN                      //added
 %token<s> STRING QSTRING
