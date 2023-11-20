@@ -1,4 +1,7 @@
-%{
+%{ 
+// GV Logo project - CIS 343
+// Jodi-Ann Currie and Autumn Bertram
+
 #define WIDTH 640
 #define HEIGHT 480
 #define MAX_VARIABLES 256    //added
