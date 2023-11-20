@@ -8,18 +8,18 @@ extern void yyerror(const char* s);
 
 %%
 ;           { return SEP; }
-penup      { return PENUP; }
-pendown    { return PENDOWN; }
-print      { return PRINT; }
-changecolor { return CHANGE_COLOR; }
-color      { return COLOR; }
-clear      { return CLEAR; }
-turn       { return TURN; }
-where      { return WHERE; }
-loop       { return LOOP; }
-move       { return MOVE; }
-save       { return SAVE; }
-goto        { return GOTO; }
+PENUP     { return PENUP; }
+PENDOWN    { return PENDOWN; }
+PRINT      { return PRINT; }
+CHANGECOLOR { return CHANGE_COLOR; }
+COLOR      { return COLOR; }
+CLEAR      { return CLEAR; }
+TURN       { return TURN; }
+WHERE      { return WHERE; }
+LOOP        { return LOOP; }
+MOVE       { return MOVE; }
+SAVE       { return SAVE; }
+GOTO        { return GOTO; }
 \+          { return PLUS; }
 -          { return SUB; }
 \*          { return MULT; }
